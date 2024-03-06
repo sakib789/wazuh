@@ -14,7 +14,6 @@ import sys
 from wazuh.core.utils import clean_pid_files
 from wazuh.core.wlogging import WazuhLogger
 
-
 #
 # Aux functions
 #
@@ -83,6 +82,8 @@ async def master_main(args: argparse.Namespace, cluster_config: dict, cluster_it
         Cluster logger.
     """
     from wazuh.core.cluster import master, local_server
+    from wazuh.core.cluster.hap_helper.hap_helper import HAPHelper
+
     cluster_utils.context_tag.set('Master')
     my_server = master.Master(performance_test=args.performance_test, concurrency_test=args.concurrency_test,
                               configuration=cluster_config, enable_ssl=args.ssl, logger=logger,
@@ -95,7 +96,7 @@ async def master_main(args: argparse.Namespace, cluster_config: dict, cluster_it
                                                      concurrency_test=args.concurrency_test, node=my_server,
                                                      configuration=cluster_config, enable_ssl=args.ssl,
                                                      cluster_items=cluster_items)
-    await asyncio.gather(my_server.start(), my_local_server.start())
+    await asyncio.gather(my_server.start(), my_local_server.start(), HAPHelper.start())
 
 
 #
