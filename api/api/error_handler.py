@@ -55,6 +55,42 @@ def _cleanup_detail_field(detail: str) -> str:
     return ' '.join(str(detail).replace("\n\n", ". ").replace("\n", "").split())
 
 
+async def handle_expect_header(request: ConnexionRequest, exc: ContentSizeExceeded = None) -> ConnexionResponse:
+    """Handler for 'Expect' header.
+    
+    Parameters
+    ----------
+    request : ConnexionRequest
+        Incoming request.
+    exc : ContentSizeExceeded
+        Raised exception if content size exceeds the limit.
+
+    Returns
+    -------
+    Response
+        HTTP Response returned to the client.
+    """
+    problem = {
+       "title": "error : 417",
+       "detail": "Expectation Failed."
+    }
+
+    if "Expect" in request.headers:
+        expect_value = request.headers["Expect"].lower()
+
+        if expect_value != "100-continue":
+            return json_response(data=problem, pretty=request.query_params.get('pretty', 'false') == 'true',
+                                 status_code=417, content_type=ERROR_CONTENT_TYPE)
+        
+        elif exc and expect_value == "100-continue":
+            return json_response(data=problem, pretty=request.query_params.get('pretty', 'false') == 'true',
+                                 status_code=417, content_type=ERROR_CONTENT_TYPE)
+            
+        else:
+            return json_response(data="100-continue", pretty=request.query_params.get('pretty', 'false') == 'true',
+                                 status_code=200)
+
+
 async def unauthorized_error_handler(request: ConnexionRequest,
                                      exc: exceptions.Unauthorized) -> ConnexionResponse:
     """Unauthorized Exception Error handler.
@@ -71,6 +107,15 @@ async def unauthorized_error_handler(request: ConnexionRequest,
     Response
         HTTP Response returned to the client.
     """
+    expect_response = None
+    if "Expect" in request.headers:
+        if isinstance(exc, ContentSizeExceeded):
+            expect_response = await handle_expect_header(request, exc)
+        else:
+            expect_response = await handle_expect_header(request)
+        return expect_response
+
+    
     problem = {
         "title": "Unauthorized",
     }
