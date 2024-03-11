@@ -56,7 +56,7 @@ def _cleanup_detail_field(detail: str) -> str:
 
 
 async def handle_expect_header(request: ConnexionRequest, exc: ContentSizeExceeded = None) -> ConnexionResponse:
-    """Handler for 'Expect' header.
+    """Handler for the 'Expect' HTTP header.
     
     Parameters
     ----------
@@ -71,24 +71,28 @@ async def handle_expect_header(request: ConnexionRequest, exc: ContentSizeExceed
         HTTP Response returned to the client.
     """
     problem = {
-       "title": "error : 417",
-       "detail": "Expectation Failed."
+       "title": "Expectation failed",
+       "detail": "Unknown Expect",
+       "error": 417
     }
 
-    if "Expect" in request.headers:
+    if 'Expect' in request.headers:
         expect_value = request.headers["Expect"].lower()
 
-        if expect_value != "100-continue":
+        continue_msg = '100-continue'
+        data = continue_msg
+        status_code = 200
+        content_type = None
+
+        if expect_value != continue_msg or (exc and expect_value == continue_msg):
+            data = problem
+            status_code = 417
+            content_type = ERROR_CONTENT_TYPE
             return json_response(data=problem, pretty=request.query_params.get('pretty', 'false') == 'true',
-                                 status_code=417, content_type=ERROR_CONTENT_TYPE)
-        
-        elif exc and expect_value == "100-continue":
-            return json_response(data=problem, pretty=request.query_params.get('pretty', 'false') == 'true',
-                                 status_code=417, content_type=ERROR_CONTENT_TYPE)
-            
-        else:
-            return json_response(data="100-continue", pretty=request.query_params.get('pretty', 'false') == 'true',
-                                 status_code=200)
+                                status_code=417, content_type=ERROR_CONTENT_TYPE)
+                                
+        return json_response(data=data, pretty=request.query_params.get('pretty', 'false') == 'true',
+                            status_code=status_code, content_type=content_type)
 
 
 async def unauthorized_error_handler(request: ConnexionRequest,

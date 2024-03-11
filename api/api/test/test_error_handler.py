@@ -189,7 +189,7 @@ async def test_problem_error_handler(title, detail, ext, error_type, mock_reques
 @pytest.mark.asyncio
 @pytest.mark.parametrize('expect_header, exc, expected_status_code, expected_response', [
     ('100-continue', None, 200, '"100-continue"'),
-    ('expect_value', ContentSizeExceeded(), 417, {"title": "error : 417", "detail": "Expectation Failed."}),
+    ('expect_value', ContentSizeExceeded(), 417, {"title": "Expectation failed", "detail": "Unknown Expect","error": 417}),
 ])
 async def test_handle_expect_header(expect_header, exc, expected_status_code, expected_response, mock_request):
     """Test handle_expect_header function."""
