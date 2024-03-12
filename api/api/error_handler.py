@@ -70,11 +70,6 @@ async def handle_expect_header(request: ConnexionRequest, exc: ContentSizeExceed
     Response
         HTTP Response returned to the client.
     """
-    problem = {
-       "title": "Expectation failed",
-       "detail": "Unknown Expect",
-       "error": 417
-    }
 
     if 'Expect' in request.headers:
         expect_value = request.headers["Expect"].lower()
@@ -85,9 +80,11 @@ async def handle_expect_header(request: ConnexionRequest, exc: ContentSizeExceed
         content_type = None
 
         if expect_value != continue_msg or (exc and expect_value == continue_msg):
-            data = problem
-            status_code = 417
-            content_type = ERROR_CONTENT_TYPE
+            problem = {
+                "title": "Expectation failed",
+                "detail": "Unknown Expect",
+                "error": 417
+                }
             return json_response(data=problem, pretty=request.query_params.get('pretty', 'false') == 'true',
                                 status_code=417, content_type=ERROR_CONTENT_TYPE)
                                 
