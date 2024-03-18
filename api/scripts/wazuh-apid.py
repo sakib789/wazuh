@@ -216,7 +216,8 @@ def start(params: dict):
     app.add_error_handler(HTTPException, error_handler.http_error_handler)
     app.add_error_handler(ProblemException, error_handler.problem_error_handler)
     app.add_error_handler(403, error_handler.problem_error_handler)
-
+    app.add_error_handler(417, error_handler.expect_header_error_handler)
+    
     # Add application signals TO BE MODIFIED AFTER IMPLEMENTING CTI IN CONNEXION 3.0
     # app.app.on_response_prepare.append(modify_response_headers)
     # app.app.cleanup_ctx.append(register_background_tasks)

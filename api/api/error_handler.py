@@ -108,15 +108,6 @@ async def unauthorized_error_handler(request: ConnexionRequest,
     Response
         HTTP Response returned to the client.
     """
-    expect_response = None
-    if "Expect" in request.headers:
-        if isinstance(exc, ContentSizeExceeded):
-            expect_response = await handle_expect_header(request, exc)
-        else:
-            expect_response = await handle_expect_header(request)
-        return expect_response
-
-    
     problem = {
         "title": "Unauthorized",
     }
