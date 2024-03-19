@@ -200,14 +200,12 @@ IndexerConnector::IndexerConnector(
                 }
                 catch (const std::exception& e)
                 {
-                    // Improved logging message
                     logWarn(IC_NAME,
-                            "Error initializing IndexerConnector for index '%s': %s. Retrying in %ld seconds. Maximum "
-                            "wait time: %ld seconds.",
+                            "Unable to initializing IndexerConnector for index '%s'. Error: %s. Retrying in %ld "
+                            "seconds.",
                             indexName.c_str(),
                             e.what(),
-                            sleepTime.count(),
-                            MAX_WAIT_TIME);
+                            sleepTime.count());
                 }
             } while (!m_initialized && !m_cv.wait_for(lock, sleepTime, [&]() { return m_stopping.load(); }));
         });
